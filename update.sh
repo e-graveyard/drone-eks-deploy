@@ -37,8 +37,8 @@ fi
 
 
 # Fetch the EKS cluster information.
-EKS_URL=$(aws eks describe-cluster --name datascience-staging-main | jq -r .cluster.endpoint)
-EKS_CA=$(aws eks describe-cluster --name datascience-staging-main | jq -r .cluster.certificateAuthority.data)
+EKS_URL=$(aws eks describe-cluster --name ${PLUGIN_EKS_CLUSTER} | jq -r .cluster.endpoint)
+EKS_CA=$(aws eks describe-cluster --name ${PLUGIN_EKS_CLUSTER} | jq -r .cluster.certificateAuthority.data)
 
 if [ -z $EKS_URL ] || [ -z $EKS_CA ]; then
     echo "Unable to obtain EKS cluster information - check Drone's EKS API permissions"
