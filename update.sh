@@ -5,23 +5,13 @@ if [ -z ${PLUGIN_EKS_CLUSTER} ]; then
     exit 1
 fi
 
-if [ -z ${PLUGIN_MANIFEST_FILE} ]; then
-    echo "MANIFEST_FILE (Manifest filepath to be applied) must be defined."
-    exit 1
-fi
-
 if [ -z ${PLUGIN_IAM_ROLE_ARN} ]; then
     echo "IAM_ROLE_ARN (ARN of the IAM role with cluster deploy/management perms) must be defined."
     exit 1
 fi
 
-if [ -z ${PLUGIN_REPO} ]; then
-    echo "REPO must be defined"
-    exit 1
-fi
-
-if [ -z ${PLUGIN_TAG} ]; then
-    echo "TAG must be defined"
+if [ -z ${PLUGIN_MANIFEST} ]; then
+    echo "MANIFEST_FILE (Manifest filepath to be applied) must be defined."
     exit 1
 fi
 
@@ -92,4 +82,5 @@ users:
 EOF
 
 
-cat ${PLUGIN_MANIFEST_FILE}
+# Apply the manifest file
+cat ${PLUGIN_MANIFEST} | kubectl apply -f -
