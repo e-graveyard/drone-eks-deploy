@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 if [ -z ${PLUGIN_EKS_CLUSTER} ]; then
     echo "EKS_CLUSTER (Name of EKS cluster) must be defined."

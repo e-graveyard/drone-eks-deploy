@@ -13,5 +13,5 @@ RUN chmod +x /usr/bin/kubectl /usr/bin/aws-iam-authenticator
 # Install the Drone plugin script
 COPY update.sh /bin/
 
-ENTRYPOINT ["/bin/bash"]
+ENTRYPOINT ["/bin/sh"]
 CMD ["/bin/update.sh"]
