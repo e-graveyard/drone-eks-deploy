@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ -z ${PLUGIN_EKS_CLUSTER} ]; then
+if [ -z ${PLUGIN_CLUSTER} ]; then
     echo "EKS_CLUSTER (Name of EKS cluster) must be defined."
     exit 1
 fi
@@ -15,6 +15,7 @@ if [ -z ${PLUGIN_MANIFEST} ]; then
     exit 1
 fi
 
+
 if [ -z ${PLUGIN_AWS_REGION} ]; then
     # Try to pull the region from the host that is running Drone - this assumes
     # the Drone EC2 instance is in the same region as the EKS cluster you are
@@ -23,7 +24,6 @@ if [ -z ${PLUGIN_AWS_REGION} ]; then
     export PLUGIN_AWS_REGION=`echo ${AWS_REGION_AND_ZONE} | sed 's/[a-z]$//'`
 fi
 export AWS_DEFAULT_REGION=${PLUGIN_AWS_REGION}
-
 
 
 # Fetch the token from the AWS account.
@@ -37,13 +37,21 @@ fi
 
 
 # Fetch the EKS cluster information.
-EKS_URL=$(aws eks describe-cluster --name ${PLUGIN_EKS_CLUSTER} | jq -r .cluster.endpoint)
-EKS_CA=$(aws eks describe-cluster --name ${PLUGIN_EKS_CLUSTER} | jq -r .cluster.certificateAuthority.data)
+EKS_URL=$(aws eks describe-cluster --name ${PLUGIN_CLUSTER} | jq -r .cluster.endpoint)
+EKS_CA=$(aws eks describe-cluster --name ${PLUGIN_CLUSTER} | jq -r .cluster.certificateAuthority.data)
 
 if [ -z $EKS_URL ] || [ -z $EKS_CA ]; then
     echo "Unable to obtain EKS cluster information - check Drone's EKS API permissions"
     exit 1
 fi
+
+
+mkdir ~/.aws
+cat > ~/.aws/credentials << EOF
+[default]
+aws_access_key_id = ${PLUGIN_ACCESS_KEY}
+aws_secret_access_key = ${PLUGIN_SECRET_KEY}
+EOF
 
 
 # Generate configuration files
@@ -57,18 +65,18 @@ clusters:
 - cluster:
     server: ${EKS_URL}
     certificate-authority-data: ${EKS_CA}
-  name: eks_${PLUGIN_EKS_CLUSTER}
+  name: eks_${PLUGIN_CLUSTER}
 
 contexts:
 - context:
-    cluster: eks_${PLUGIN_EKS_CLUSTER}
-    user: eks_${PLUGIN_EKS_CLUSTER}
-  name: eks_${PLUGIN_EKS_CLUSTER}
+    cluster: eks_${PLUGIN_CLUSTER}
+    user: eks_${PLUGIN_CLUSTER}
+  name: eks_${PLUGIN_CLUSTER}
 
-current-context: eks_${PLUGIN_EKS_CLUSTER}
+current-context: eks_${PLUGIN_CLUSTER}
 
 users:
-- name: eks_${PLUGIN_EKS_CLUSTER}
+- name: eks_${PLUGIN_CLUSTER}
   user:
     exec:
       apiVersion: client.authentication.k8s.io/v1alpha1
@@ -76,7 +84,7 @@ users:
       args:
         - "token"
         - "-i"
-        - ${PLUGIN_EKS_CLUSTER}
+        - ${PLUGIN_CLUSTER}
         - -r
         - ${PLUGIN_IAM_ROLE_ARN}
 EOF
