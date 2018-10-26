@@ -26,6 +26,14 @@ fi
 export AWS_DEFAULT_REGION=${PLUGIN_AWS_REGION}
 
 
+mkdir ~/.aws
+cat > ~/.aws/credentials << EOF
+[default]
+aws_access_key_id = ${PLUGIN_ACCESS_KEY}
+aws_secret_access_key = ${PLUGIN_SECRET_KEY}
+EOF
+
+
 # Fetch the token from the AWS account.
 KUBERNETES_TOKEN=$(aws-iam-authenticator token -i $PLUGIN_EKS_CLUSTER -r $PLUGIN_IAM_ROLE_ARN | jq -r .status.token)
 
@@ -44,14 +52,6 @@ if [ -z $EKS_URL ] || [ -z $EKS_CA ]; then
     echo "Unable to obtain EKS cluster information - check Drone's EKS API permissions"
     exit 1
 fi
-
-
-mkdir ~/.aws
-cat > ~/.aws/credentials << EOF
-[default]
-aws_access_key_id = ${PLUGIN_ACCESS_KEY}
-aws_secret_access_key = ${PLUGIN_SECRET_KEY}
-EOF
 
 
 # Generate configuration files
