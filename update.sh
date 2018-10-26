@@ -26,13 +26,9 @@ fi
 export AWS_DEFAULT_REGION=${PLUGIN_AWS_REGION}
 
 
-echo "Creating credentials file..."
-mkdir ~/.aws
-cat > ~/.aws/credentials << EOF
-[default]
-aws_access_key_id = ${PLUGIN_ACCESS_KEY}
-aws_secret_access_key = ${PLUGIN_SECRET_KEY}
-EOF
+echo "Exporting credentials..."
+export AWS_ACCESS_KEY_ID=${PLUGIN_ACCESS_KEY}
+export AWS_SECRET_ACCESS_KEY=${PLUGIN_SECRET_KEY}
 
 
 echo "Fetching the authentication token..."
