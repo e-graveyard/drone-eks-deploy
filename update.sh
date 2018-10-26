@@ -36,7 +36,7 @@ EOF
 
 
 echo "Fetching the authentication token..."
-KUBERNETES_TOKEN=$(aws-iam-authenticator token -i $PLUGIN_EKS_CLUSTER -r $PLUGIN_IAM_ROLE_ARN | jq -r .status.token)
+KUBERNETES_TOKEN=$(aws-iam-authenticator token -i $PLUGIN_CLUSTER -r $PLUGIN_IAM_ROLE_ARN | jq -r .status.token)
 
 if [ -z $KUBERNETES_TOKEN ]; then
     echo "Unable to obtain Kubernetes token - check Drone's IAM permissions"
