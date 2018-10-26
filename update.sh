@@ -26,6 +26,7 @@ fi
 export AWS_DEFAULT_REGION=${PLUGIN_AWS_REGION}
 
 
+echo "Creating credentials file..."
 mkdir ~/.aws
 cat > ~/.aws/credentials << EOF
 [default]
@@ -34,7 +35,7 @@ aws_secret_access_key = ${PLUGIN_SECRET_KEY}
 EOF
 
 
-# Fetch the token from the AWS account.
+echo "Fetching the authentication token..."
 KUBERNETES_TOKEN=$(aws-iam-authenticator token -i $PLUGIN_EKS_CLUSTER -r $PLUGIN_IAM_ROLE_ARN | jq -r .status.token)
 
 if [ -z $KUBERNETES_TOKEN ]; then
@@ -44,7 +45,7 @@ if [ -z $KUBERNETES_TOKEN ]; then
 fi
 
 
-# Fetch the EKS cluster information.
+echo "Fetching the EKS cluster information..."
 EKS_URL=$(aws eks describe-cluster --name ${PLUGIN_CLUSTER} | jq -r .cluster.endpoint)
 EKS_CA=$(aws eks describe-cluster --name ${PLUGIN_CLUSTER} | jq -r .cluster.certificateAuthority.data)
 
@@ -54,7 +55,7 @@ if [ -z $EKS_URL ] || [ -z $EKS_CA ]; then
 fi
 
 
-# Generate configuration files
+echo "Generating the k8s configuration file..."
 mkdir ~/.kube
 cat > ~/.kube/config << EOF
 apiVersion: v1
@@ -90,5 +91,5 @@ users:
 EOF
 
 
-# Apply the manifest file
+echo "Applying the new manifest..."
 cat ${PLUGIN_MANIFEST} | kubectl apply -f -
