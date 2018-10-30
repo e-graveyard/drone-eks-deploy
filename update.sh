@@ -45,10 +45,10 @@ if [ -z $EKS_URL ] || [ -z $EKS_CA ]; then
 fi
 
 
-echo "\n--------------------------------------------------\n"
+echo "--------------------------------------------------"
 echo "Cluster endpoint: $EKS_URL"
 echo "Cluster certificate: $EKS_CA"
-echo "\n--------------------------------------------------\n"
+echo "--------------------------------------------------"
 
 
 echo "Generating the k8s configuration file..."
@@ -87,10 +87,17 @@ users:
 EOF
 
 
-echo "\n--------------------------------------------------\n"
+echo "--------------------------------------------------"
 echo "Configuration file:\n"
 cat ~/.kube/config
-echo "\n--------------------------------------------------\n"
+echo "--------------------------------------------------"
+
+
+echo "Exporting configuration path..."
+export KUBECONFIG=$KUBECONFIG:~/.kube/config
+
+
+kubectl get svc
 
 
 echo "Applying the new manifest..."
