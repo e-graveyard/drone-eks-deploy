@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ -z ${PLUGIN_CLUSTER} ]; then
+if [ -z ${PLUGIN_CLUSTER_ARN} ]; then
     echo "EKS_CLUSTER (Name of EKS cluster) must be defined."
     exit 1
 fi
@@ -26,7 +26,7 @@ export AWS_DEFAULT_REGION=${PLUGIN_AWS_REGION}
 
 
 echo "Fetching the authentication token..."
-KUBERNETES_TOKEN=$(aws-iam-authenticator token -i $PLUGIN_CLUSTER -r $PLUGIN_IAM_ROLE_ARN | jq -r .status.token)
+KUBERNETES_TOKEN=$(aws-iam-authenticator token -i $PLUGIN_CLUSTER_ARN -r $PLUGIN_IAM_ROLE_ARN | jq -r .status.token)
 
 if [ -z $KUBERNETES_TOKEN ]; then
     echo "Unable to obtain Kubernetes token - check Drone's IAM permissions"
@@ -36,8 +36,8 @@ fi
 
 
 echo "Fetching the EKS cluster information..."
-EKS_URL=$(aws eks describe-cluster --name ${PLUGIN_CLUSTER} | jq -r .cluster.endpoint)
-EKS_CA=$(aws eks describe-cluster --name ${PLUGIN_CLUSTER} | jq -r .cluster.certificateAuthority.data)
+EKS_URL=$(aws eks describe-cluster --name ${PLUGIN_CLUSTER_ARN} | jq -r .cluster.endpoint)
+EKS_CA=$(aws eks describe-cluster --name ${PLUGIN_CLUSTER_ARN} | jq -r .cluster.certificateAuthority.data)
 
 if [ -z $EKS_URL ] || [ -z $EKS_CA ]; then
     echo "Unable to obtain EKS cluster information - check Drone's EKS API permissions"
@@ -62,18 +62,18 @@ clusters:
 - cluster:
     server: ${EKS_URL}
     certificate-authority-data: ${EKS_CA}
-  name: eks_${PLUGIN_CLUSTER}
+  name: ${PLUGIN_CLUSTER_ARN}
 
 contexts:
 - context:
-    cluster: eks_${PLUGIN_CLUSTER}
-    user: eks_${PLUGIN_CLUSTER}
-  name: eks_${PLUGIN_CLUSTER}
+    cluster: ${PLUGIN_CLUSTER_ARN}
+    user: ${PLUGIN_CLUSTER_ARN}
+  name: ${PLUGIN_CLUSTER_ARN}
 
-current-context: eks_${PLUGIN_CLUSTER}
+current-context: ${PLUGIN_CLUSTER_ARN}
 
 users:
-- name: eks_${PLUGIN_CLUSTER}
+- name: ${PLUGIN_CLUSTER_ARN}
   user:
     exec:
       apiVersion: client.authentication.k8s.io/v1alpha1
@@ -81,7 +81,7 @@ users:
       args:
         - "token"
         - "-i"
-        - ${PLUGIN_CLUSTER}
+        - ${PLUGIN_CLUSTER_ARN}
         - -r
         - ${PLUGIN_IAM_ROLE_ARN}
 EOF
