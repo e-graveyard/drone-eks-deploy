@@ -102,7 +102,7 @@ export AWS_ACCESS_KEY_ID=${PLUGIN_ACCESS_KEY}
 export AWS_SECRET_ACCESS_KEY=${PLUGIN_SECRET_KEY}
 
 
-kubectl get svc
+kubectl get svc --v=10
 
 
 echo "Applying the new manifest..."
