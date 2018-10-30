@@ -84,8 +84,6 @@ users:
       - token
       - -i
       - $CLUSTER_NAME
-      - -r
-      - ${PLUGIN_IAM_ROLE_ARN}
 EOF
 
 
