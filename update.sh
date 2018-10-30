@@ -25,8 +25,10 @@ fi
 export AWS_DEFAULT_REGION=${PLUGIN_AWS_REGION}
 
 
+CLUSTER_NAME=$(echo "${PLUGIN_CLUSTER_ARN}" | cut -d"/" -f2)
+
 echo "Fetching the authentication token..."
-KUBERNETES_TOKEN=$(aws-iam-authenticator token -i $PLUGIN_CLUSTER_ARN -r $PLUGIN_IAM_ROLE_ARN | jq -r .status.token)
+KUBERNETES_TOKEN=$(aws-iam-authenticator token -i $CLUSTER_NAME -r $PLUGIN_IAM_ROLE_ARN | jq -r .status.token)
 
 if [ -z $KUBERNETES_TOKEN ]; then
     echo "Unable to obtain Kubernetes token - check Drone's IAM permissions"
@@ -36,8 +38,8 @@ fi
 
 
 echo "Fetching the EKS cluster information..."
-EKS_URL=$(aws eks describe-cluster --name ${PLUGIN_CLUSTER_ARN} | jq -r .cluster.endpoint)
-EKS_CA=$(aws eks describe-cluster --name ${PLUGIN_CLUSTER_ARN} | jq -r .cluster.certificateAuthority.data)
+EKS_URL=$(aws eks describe-cluster --name $CLUSTER_NAME | jq -r .cluster.endpoint)
+EKS_CA=$(aws eks describe-cluster --name $CLUSTER_NAME | jq -r .cluster.certificateAuthority.data)
 
 if [ -z $EKS_URL ] || [ -z $EKS_CA ]; then
     echo "Unable to obtain EKS cluster information - check Drone's EKS API permissions"
