@@ -81,11 +81,11 @@ users:
       apiVersion: client.authentication.k8s.io/v1alpha1
       command: aws-iam-authenticator
       args:
-        - "token"
-        - "-i"
-        - $CLUSTER_NAME
-        - -r
-        - ${PLUGIN_IAM_ROLE_ARN}
+      - token
+      - -i
+      - $CLUSTER_NAME
+      - -r
+      - ${PLUGIN_IAM_ROLE_ARN}
 EOF
 
 
