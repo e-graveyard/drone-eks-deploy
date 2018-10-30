@@ -83,7 +83,7 @@ users:
       args:
         - "token"
         - "-i"
-        - ${PLUGIN_CLUSTER_ARN}
+        - $CLUSTER_NAME
         - -r
         - ${PLUGIN_IAM_ROLE_ARN}
 EOF
