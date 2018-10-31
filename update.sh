@@ -1,17 +1,19 @@
 #!/bin/sh
 
-if [ -z ${PLUGIN_CLUSTER_ARN} ]; then
-    echo "EKS_CLUSTER (Name of EKS cluster) must be defined."
+echo "Initializing..."
+
+if [ -z ${PLUGIN_CLUSTER} ]; then
+    echo "The 'CLUSTER' parameter (EKS Cluster ARN) must be defined."
     exit 1
 fi
 
-if [ -z ${PLUGIN_IAM_ROLE_ARN} ]; then
-    echo "IAM_ROLE_ARN (ARN of the IAM role with cluster deploy/management perms) must be defined."
+if [ -z ${PLUGIN_NODE_ROLE} ]; then
+    echo "The 'NODE_ROLE' parameter (Cluster node group ARN) must be defined."
     exit 1
 fi
 
 if [ -z ${PLUGIN_MANIFEST} ]; then
-    echo "MANIFEST_FILE (Manifest filepath to be applied) must be defined."
+    echo "The 'MANIFEST' parameter (Manifest file to be applied) must be defined."
     exit 1
 fi
 
@@ -25,14 +27,18 @@ fi
 export AWS_DEFAULT_REGION=${PLUGIN_AWS_REGION}
 
 
-CLUSTER_NAME=$(echo "${PLUGIN_CLUSTER_ARN}" | cut -d"/" -f2)
+CLUSTER_NAME=$(echo "${PLUGIN_CLUSTER}" | cut -d"/" -f2)
+echo ""
+echo "Trying to deploy against '$CLUSTER_NAME' ($AWS_DEFAULT_REGION)."
+echo ""
 
 echo "Fetching the authentication token..."
-KUBERNETES_TOKEN=$(aws-iam-authenticator token -i $CLUSTER_NAME -r $PLUGIN_IAM_ROLE_ARN | jq -r .status.token)
+KUBERNETES_TOKEN=$(aws-iam-authenticator token -i $CLUSTER_NAME -r $PLUGIN_NODE_ROLE | jq -r .status.token)
 
 if [ -z $KUBERNETES_TOKEN ]; then
+    echo ""
     echo "Unable to obtain Kubernetes token - check Drone's IAM permissions"
-    echo "Maybe it cannot assume the ${PLUGIN_IAM_ROLE_ARN} role?"
+    echo "Maybe it cannot assume the '${PLUGIN_NODE_ROLE}' role?"
     exit 1
 fi
 
@@ -42,15 +48,10 @@ EKS_URL=$(aws eks describe-cluster --name $CLUSTER_NAME | jq -r .cluster.endpoin
 EKS_CA=$(aws eks describe-cluster --name $CLUSTER_NAME | jq -r .cluster.certificateAuthority.data)
 
 if [ -z $EKS_URL ] || [ -z $EKS_CA ]; then
+    echo ""
     echo "Unable to obtain EKS cluster information - check Drone's EKS API permissions"
     exit 1
 fi
-
-
-echo "--------------------------------------------------"
-echo "Cluster endpoint: $EKS_URL"
-echo "Cluster certificate: $EKS_CA"
-echo "--------------------------------------------------"
 
 
 echo "Generating the k8s configuration file..."
@@ -64,18 +65,18 @@ clusters:
 - cluster:
     server: ${EKS_URL}
     certificate-authority-data: ${EKS_CA}
-  name: ${PLUGIN_CLUSTER_ARN}
+  name: ${PLUGIN_CLUSTER}
 
 contexts:
 - context:
-    cluster: ${PLUGIN_CLUSTER_ARN}
-    user: ${PLUGIN_CLUSTER_ARN}
-  name: ${PLUGIN_CLUSTER_ARN}
+    cluster: ${PLUGIN_CLUSTER}
+    user: ${PLUGIN_CLUSTER}
+  name: ${PLUGIN_CLUSTER}
 
-current-context: ${PLUGIN_CLUSTER_ARN}
+current-context: ${PLUGIN_CLUSTER}
 
 users:
-- name: ${PLUGIN_CLUSTER_ARN}
+- name: ${PLUGIN_CLUSTER}
   user:
     exec:
       apiVersion: client.authentication.k8s.io/v1alpha1
@@ -87,13 +88,7 @@ users:
 EOF
 
 
-echo "--------------------------------------------------"
-echo "Configuration file:\n"
-cat ~/.kube/config
-echo "--------------------------------------------------"
-
-
-echo "Exporting configuration path..."
+echo "Exporting k8s configuration path..."
 export KUBECONFIG=$KUBECONFIG:~/.kube/config
 
 
@@ -102,8 +97,8 @@ export AWS_ACCESS_KEY_ID=${PLUGIN_ACCESS_KEY}
 export AWS_SECRET_ACCESS_KEY=${PLUGIN_SECRET_KEY}
 
 
-kubectl get svc
-
-
-echo "Applying the new manifest..."
+echo "Applying the manifest..."
+echo ""
 cat ${PLUGIN_MANIFEST} | kubectl apply -f -
+echo ""
+echo "Flow has ended."
