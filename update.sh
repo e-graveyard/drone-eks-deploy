@@ -26,8 +26,12 @@ fi
 export AWS_DEFAULT_REGION=${PLUGIN_AWS_REGION}
 
 
+echo "Exporting credentials..."
 export AWS_ACCESS_KEY_ID=${PLUGIN_ACCESS_KEY}
 export AWS_SECRET_ACCESS_KEY=${PLUGIN_SECRET_KEY}
+
+
+echo "Updating kubernetes configuration..."
 aws eks update-kubeconfig --name ${PLUGIN_CLUSTER}
 
 
