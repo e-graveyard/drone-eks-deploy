@@ -1,18 +1,22 @@
 #!/bin/sh
 
 if [ -z ${PLUGIN_ACCESS_KEY} ]; then
+    echo "Missing access key"
     exit 1
 fi
 
 if [ -z ${PLUGIN_SECRET_KEY} ]; then
+    echo "Missing secret key"
     exit 1
 fi
 
 if [ -z ${PLUGIN_CLUSTER} ]; then
+    echo "Missing cluster name"
     exit 1
 fi
 
 if [ -z ${PLUGIN_MANIFEST} ]; then
+    echo "Missing manifest name"
     exit 1
 fi
 
