@@ -78,10 +78,6 @@ echo "Exporting k8s configuration path..."
 export KUBECONFIG=$KUBECONFIG:~/.kube/config
 
 
-export AWS_ACCESS_KEY_ID=""
-export AWS_SECRET_ACCESS_KEY=""
-
-
 echo "Applying the manifest..."
 echo ""
 cat ${PLUGIN_MANIFEST} | kubectl apply -f -
