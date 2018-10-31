@@ -2,21 +2,6 @@
 
 echo "Initializing..."
 
-if [ -z ${PLUGIN_CLUSTER} ]; then
-    echo "The 'CLUSTER' parameter (EKS Cluster ARN) must be defined."
-    exit 1
-fi
-
-if [ -z ${PLUGIN_NODE_ROLE} ]; then
-    echo "The 'NODE_ROLE' parameter (Cluster node group ARN) must be defined."
-    exit 1
-fi
-
-if [ -z ${PLUGIN_MANIFEST} ]; then
-    echo "The 'MANIFEST' parameter (Manifest file to be applied) must be defined."
-    exit 1
-fi
-
 if [ -z ${PLUGIN_AWS_REGION} ]; then
     # Try to pull the region from the host that is running Drone - this assumes
     # the Drone EC2 instance is in the same region as the EKS cluster you are
