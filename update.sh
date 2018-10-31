@@ -12,18 +12,19 @@ fi
 export AWS_DEFAULT_REGION=${PLUGIN_AWS_REGION}
 
 
-CLUSTER_NAME=$(echo "${PLUGIN_CLUSTER}" | cut -d"/" -f2)
+export NODE_GROUP_ARN=${PLUGIN_NODE_ROLE}
+export CLUSTER_NAME=$(echo "${PLUGIN_CLUSTER}" | cut -d"/" -f2)
 echo ""
 echo "Trying to deploy against '$CLUSTER_NAME' ($AWS_DEFAULT_REGION)."
 echo ""
 
 echo "Fetching the authentication token..."
-KUBERNETES_TOKEN=$(aws-iam-authenticator token -i $CLUSTER_NAME -r $PLUGIN_NODE_ROLE | jq -r .status.token)
+KUBERNETES_TOKEN=$(aws-iam-authenticator token -i $CLUSTER_NAME -r $NODE_GROUP_ARN | jq -r .status.token)
 
 if [ -z $KUBERNETES_TOKEN ]; then
     echo ""
     echo "Unable to obtain Kubernetes token - check Drone's IAM permissions"
-    echo "Maybe it cannot assume the '${PLUGIN_NODE_ROLE}' role?"
+    echo "Maybe it cannot assume the '$NODE_GROUP_ARN' role?"
     exit 1
 fi
 
