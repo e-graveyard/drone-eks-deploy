@@ -82,6 +82,9 @@ echo "Exporting credentials..."
 export AWS_ACCESS_KEY_ID=${PLUGIN_ACCESS_KEY}
 export AWS_SECRET_ACCESS_KEY=${PLUGIN_SECRET_KEY}
 
+echo "${PLUGIN_ACCESS_KEY}"
+echo "$AWS_ACCESS_KEY_ID"
+
 
 echo "Applying the manifest..."
 echo ""
