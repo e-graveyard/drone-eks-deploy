@@ -80,6 +80,6 @@ export KUBECONFIG=$KUBECONFIG:~/.kube/config
 
 echo "Applying the manifest..."
 echo ""
-cat ${PLUGIN_MANIFEST} | kubectl apply -f -
+cat ${PLUGIN_MANIFEST} | sed 's@__TAG__@'"$DRONE_TAG"'@g' | kubectl apply -f -
 echo ""
 echo "Flow has ended."
