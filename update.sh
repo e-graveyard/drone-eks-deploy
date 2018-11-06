@@ -1,11 +1,14 @@
 #!/bin/sh
 
+# On error, exit immediately
+set -e
+
 echo "Initializing..."
 
 if [ -z ${PLUGIN_AWS_REGION} ]; then
     # Try to pull the region from the host that is running Drone - this assumes
     # the Drone EC2 instance is in the same region as the EKS cluster you are
-    # deploying onto. If needed, override with PLUGIN_AWS_REGION param,
+    # deploying onto. If needed, override with "AWS_REGION" param.
     export AWS_REGION_AND_ZONE=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
     export PLUGIN_AWS_REGION=$(echo ${AWS_REGION_AND_ZONE} | sed 's/[a-z]$//')
 fi
@@ -17,6 +20,7 @@ export CLUSTER_NAME=$(echo "${PLUGIN_CLUSTER}" | cut -d"/" -f2)
 echo ""
 echo "Trying to deploy against '$CLUSTER_NAME' ($AWS_DEFAULT_REGION)."
 echo ""
+
 
 echo "Fetching the authentication token..."
 KUBERNETES_TOKEN=$(aws-iam-authenticator token -i $CLUSTER_NAME -r $NODE_GROUP_ARN | jq -r .status.token)
