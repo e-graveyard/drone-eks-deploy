@@ -16,7 +16,8 @@ manifests to [EKS][eks]-based clusters.
     - [Secrets](#secrets)
 - [Permissions](#permissions)
     - [aws](#aws)
-    - [k8s](#k8s)
+        - [ConfigMap](#configmap)
+        - [RBAC](#rbac)
 - [Similar Projects](#similar-projects)
 
 
@@ -172,6 +173,99 @@ specified EKS cluster (at the `CLUSTER` parameter).
 
 
 ### k8s
+
+Kubernetes must also be configured to allow changes received from the user
+whose credentials are being used to perform the manifest appliances. One
+approach to that is to bound an AWS user to a group. This group will be then
+subject to a RBAC declaration, allowing the user to perform the necessary
+actions within the cluster.
+
+To begin, provided you have the [`awscli` configured][awscli-conf], you can
+easily update your [kubeconfig][kube-context] to add the context of your EKS
+cluster.
+
+```sh
+$ aws eks update-kubeconfig --name cluster-name
+```
+
+It is important to notice, however, that the AWS user used in this approach
+must be the same that have originated the EKS cluster. In the examples below,
+the `k8sadmin` user will be considered as the creator of the cluster.
+
+
+#### ConfigMap
+
+The [`aws-auth` ConfigMap][kube-configmap] can be used in order to bound the
+AWS user to a group.
+
+```sh
+$ kubectl edit -n kube-system configmap/aws-auth
+```
+
+Inside the configuration file, at the `data` key, include a `mapUsers` section.
+At the example below, the `k8sadmin` user will be bound to the `deployer`
+group.
+
+```yaml
+apiVersion: v1
+data:
+  mapUsers: |
+    - userarn: arn:aws:iam::012345678901:user/k8sadmin
+    username: k8sadmin
+    groups:
+      - deployer
+```
+
+The ConfigMap statement must contain the user name, as well it's ARN.
+
+[awscli-conf]: https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html
+[kube-context]: https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters
+[kube-configmap]: https://docs.aws.amazon.com/eks/latest/userguide/add-user-role.html
+
+
+#### RBAC
+
+Once the user `k8admin` is now part of the group `deployer`, the RBAC must be
+applied to the cluster to finish the authorization. The RBAC below is comprised
+of two statements: a `ClusterRole` and a `ClusterRoleBinding`.
+
+The `ClusterRole` statement defines a cluster role named `drone-deployer` with
+a given list of authorized verbs and resources. The `ClusterRoleBinding`
+statement then binds the `deployer` group to the `drone-deployer` role, thus,
+authorizing the `k8sadmin` to apply the given manifest (at the `MANIFEST`
+parameter).
+
+```yaml
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: drone-deployer
+rules:
+  - apiGroups:
+      - extensions
+    resources:
+      - deployments
+    verbs:
+      - get
+      - list
+      - patch
+      - update
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: drone-deployer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: drone-deployer
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: deployer
+```
 
 
 ## Similar projects
