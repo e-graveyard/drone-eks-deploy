@@ -40,6 +40,7 @@ pipeline:
       event: tag
 ```
 
+
 ### Image
 
 The image is publicly available at the Docker Hub in
@@ -128,8 +129,8 @@ Supposing an EKS node role named "`eks-node-role`" on an account with id
 ```
 
 The EKS node role will in turn require a trust relationship, allowing the
-resource (namely, the EC2 instance that runs the Drone agent) and the account
-itself to assume the role (the EKS node role).
+resource (_namely, the EC2 instance that runs the Drone agent_) and the account
+itself to assume the role (_the EKS node role_).
 
 ```json
 {
@@ -154,8 +155,8 @@ itself to assume the role (the EKS node role).
 }
 ```
 
-Finally, the Drone agent must be able to describe (get information about) the
-specified EKS cluster (at the `CLUSTER` parameter).
+Finally, the Drone agent must be able to describe (_get information about_) the
+specified EKS cluster (_at the `CLUSTER` parameter_).
 
 ```json
 {
@@ -234,8 +235,8 @@ of two statements: a `ClusterRole` and a `ClusterRoleBinding`.
 The `ClusterRole` statement defines a cluster role named `drone-deployer` with
 a given list of authorized verbs and resources. The `ClusterRoleBinding`
 statement then binds the `deployer` group to the `drone-deployer` role, thus,
-authorizing the `k8sadmin` to apply the given manifest (at the `MANIFEST`
-parameter).
+authorizing the `k8sadmin` to apply the given manifest (_at the `MANIFEST`
+parameter_).
 
 ```yaml
 ---
