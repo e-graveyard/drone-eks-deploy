@@ -44,7 +44,7 @@ pipeline:
 
 The image is publicly available at the Docker Hub in
 [caian/drone-eks-plugin][plugin-docker]. Alternatively, you can build your own
-image and push it at your registry:
+image and push it to your registry:
 
 ```sh
 $ docker build -t drone-eks-deploy .
@@ -67,9 +67,9 @@ The `AWS_REGION` parameter will be set by default to the Drone's agent region.
 
 ### Secrets
 
-`drone-eks-deploy` requires a set of [AWS credentials][aws-cred] (the access
-and secret keys). These credentials must have enough permissions to perform the
-desired changes at the EKS cluster.
+`drone-eks-deploy` requires a set of [AWS credentials][aws-cred] (_the access
+and secret keys_). These credentials __must have enough permissions__ to
+perform the desired changes at the EKS cluster.
 
 The access and secret keys can be injected into the container via [Drone's
 secrets][drone-secrets]. It is important to notice that the secrets must be
@@ -100,18 +100,18 @@ pipeline:
 ### aws
 
 As stated at the [parameters](#parameters) section of this document,
-`drone-eks-deploy` requires the ARN (Amazon Resource Name) of the EKS node
+`drone-eks-deploy` requires the ARN (_Amazon Resource Name_) of the EKS node
 role. The IAM role typically comprises the following policies:
 
 - `AmazonEKSWorkerNodePolicy`
 - `AmazonEC2ContainerRegistryReadOnly`
 - `AmazonEKS_CNI_Policy`
 
-This role (the EKS node role) must be able to be assumed by the Drone agent. In
-AWS, this means that the EC2 instance that runs Drone must have a role allowing
-the "assume role" of the EKS node role.
+This role (_the EKS node role_) __must be able to be assumed__ by the Drone
+agent. In AWS, this means that the EC2 instance that runs Drone must have a
+role allowing the "assume role" of the EKS node role.
 
-Supposing a EKS node role named "`eks-node-role`" on an account with id
+Supposing an EKS node role named "`eks-node-role`" on an account with id
 "`012345678901`", this could be accomplished by the following statement:
 
 ```json
@@ -177,8 +177,8 @@ specified EKS cluster (at the `CLUSTER` parameter).
 Kubernetes must also be configured to allow changes received from the user
 whose credentials are being used to perform the manifest appliances. One
 approach to that is to bound an AWS user to a group. This group will be then
-subject to a RBAC declaration, allowing the user to perform the necessary
-actions within the cluster.
+subject to a [RBAC declaration][rbac], allowing the user to perform the
+necessary actions within the cluster.
 
 To begin, provided you have the [`awscli` configured][awscli-conf], you can
 easily update your [kubeconfig][kube-context] to add the context of your EKS
@@ -189,8 +189,12 @@ $ aws eks update-kubeconfig --name cluster-name
 ```
 
 It is important to notice, however, that the AWS user used in this approach
-must be the same that have originated the EKS cluster. In the examples below,
-the `k8sadmin` user will be considered as the creator of the cluster.
+__must be the same__ that have originated the EKS cluster. In the examples
+below, the "`k8sadmin`" user will be considered as the creator of the cluster.
+
+[rbac]: https://kubernetes.io/docs/reference/access-authn-authz/rbac
+[awscli-conf]: https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html
+[kube-context]: https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters
 
 
 #### ConfigMap
@@ -203,7 +207,7 @@ $ kubectl edit -n kube-system configmap/aws-auth
 ```
 
 Inside the configuration file, at the `data` key, include a `mapUsers` section.
-At the example below, the `k8sadmin` user will be bound to the `deployer`
+At the example below, the `k8sadmin` user will be bound to the "`deployer`"
 group.
 
 ```yaml
@@ -218,8 +222,6 @@ data:
 
 The ConfigMap statement must contain the user name, as well it's ARN.
 
-[awscli-conf]: https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html
-[kube-context]: https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters
 [kube-configmap]: https://docs.aws.amazon.com/eks/latest/userguide/add-user-role.html
 
 
